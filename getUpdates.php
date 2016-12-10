@@ -72,39 +72,61 @@ try {
 		$result = $serverResponse->getResult();
 		$updateCount = count($serverResponse->getResult());
 		//echo date('Y-m-d H:i:s', time()) . ' - Processed ' . $updateCount . ' updates';
-		foreach ($result as $item) {
-			var_dump($item);
-echo PHP_EOL.PHP_EOL;
-			if (!isset($item->message['text'])) return;
 
-			$userName = $item->message['from']['first_name'].'_'.$item->message['from']['username'].'_'.$item->message['from']['last_name'].'_'.$item->message['from']['id'];
+		$forReply=[];
+		foreach ($result as $item) {
+
+			//var_dump($item);echo PHP_EOL.PHP_EOL;
+
+			if (!isset($item->message['text']) || !isset($item->message['from'])) return;
+
+			$userName =(isset($item->message['from']['first_name']) ? $item->message['from']['first_name'].'_':'').
+						(isset($item->message['from']['last_name']) ? $item->message['from']['last_name'].'_':'').
+						$item->message['from']['id'];
+			$userId = $item->message['from']['id'];
 			$message = $item->message['text'];
 			$chat_id = $item->message['chat']['id'];
 
 			$message = str_replace('@'.$BOT_NAME, '', $message);
 			$message = trim($message);
 			Longman\TelegramBot\Request::sendChatAction(['chat_id' => $chat_id, 'action' => 'typing']);
-var_dump($message);
-			$myCurl = curl_init();
-			curl_setopt_array($myCurl, array(
-				CURLOPT_URL => $MARISHKO_API_URL.'0.1/getAnswer/',
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_POST => true,
-				CURLOPT_POSTFIELDS => http_build_query(array('userName'=>$userName, 'phrase'=>$message))
-			));
-			$response = curl_exec($myCurl);
-			curl_close($myCurl);
 
-			$response = json_decode($response, true);
-			var_dump($response);
-			if ($response == false || !isset($response['answer'])) return;
-
-			echo PHP_EOL.$userName.':'.$message.PHP_EOL;
-			echo 'bot:'.$response['answer'].PHP_EOL;
-
-			$result = Longman\TelegramBot\Request::sendMessage(['chat_id' => $chat_id, 'text' => $response['answer']]);
+			if (isset($forReply[$chat_id][$userId])) {
+				$forReply[$chat_id][$userId]['message'].=' '.$message;
+			}
+			else {
+				$forReply[$chat_id][$userId]['message'] = $message;
+				$forReply[$chat_id][$userId]['userName'] = $userName;
+			}
 
 		}
+
+		foreach ($forReply as $chat_id => $chat)
+			foreach($chat as $item) {
+
+				$message = $item['message'];
+				$useName = $item['userName'];
+
+				$myCurl = curl_init();
+				curl_setopt_array($myCurl, array(
+					CURLOPT_URL => $MARISHKO_API_URL.'0.1/getAnswer/',
+					CURLOPT_RETURNTRANSFER => true,
+					CURLOPT_POST => true,
+					CURLOPT_POSTFIELDS => http_build_query(array('userName'=>$userName, 'phrase'=>$message))
+				));
+				$response = curl_exec($myCurl);
+				curl_close($myCurl);
+
+				$response = json_decode($response, true);
+				var_dump($response);
+				if ($response == false || !isset($response['answer'])) return;
+
+				echo PHP_EOL.$userName.':'.$message.PHP_EOL;
+				echo 'bot:'.$response['answer'].PHP_EOL;
+
+				$result = Longman\TelegramBot\Request::sendMessage(['chat_id' => $chat_id, 'text' => $response['answer']]);
+			}
+
 
 
 	} else {
