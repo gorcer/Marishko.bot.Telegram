@@ -50,76 +50,123 @@ try {
 	// Botan.io integration
 	//$telegram->enableBotan('your_token');
 
-	// Handle telegram getUpdates request
-	$serverResponse = $telegram->handleGetUpdates();
+	$waitSomething=[];
 
-	if ($serverResponse->isOk()) {
-		$result = $serverResponse->getResult();
-		$updateCount = count($serverResponse->getResult());
-		//echo date('Y-m-d H:i:s', time()) . ' - Processed ' . $updateCount . ' updates';
+		while (true) {
 
-		$forReply=[];
-		foreach ($result as $item) {
+				sleep(5);
+				// Handle telegram getUpdates request
+				$serverResponse = $telegram->handleGetUpdates();
 
-		//	var_dump($item);echo PHP_EOL.PHP_EOL;
+				if ($serverResponse->isOk()) {
+					$result = $serverResponse->getResult();
+					$updateCount = count($serverResponse->getResult());
+					//echo date('Y-m-d H:i:s', time()) . ' - Processed ' . $updateCount . ' updates';
 
-			if (!isset($item->message['text']) || !isset($item->message['from'])) continue;
+					$forReply=[];
+					foreach ($result as $item) {
 
-			$userName =(isset($item->message['from']['first_name']) ? $item->message['from']['first_name'].'_':'').
-						(isset($item->message['from']['last_name']) ? $item->message['from']['last_name'].'_':'').
-						$item->message['from']['id'];
-			$userId = $item->message['from']['id'];
-			$message = $item->message['text'];
-			$chat_id = $item->message['chat']['id'];
+						var_dump($item);echo PHP_EOL.PHP_EOL;
 
-			if ($item->message['chat']['type'] !== 'private' && strpos($message, $BOT_NAME) === false) continue;
+						if (!isset($item->message['text']) || !isset($item->message['from'])) continue;
 
-			$message = str_replace('@'.$BOT_NAME, '', $message);
-			$message = trim($message);
+						$userName =(isset($item->message['from']['first_name']) ? $item->message['from']['first_name'].'_':'').
+									(isset($item->message['from']['last_name']) ? $item->message['from']['last_name'].'_':'').
+									$item->message['from']['id'];
+						$userId = $item->message['from']['id'];
+						$message = $item->message['text'];
+						$chat_id = $item->message['chat']['id'];
 
-			Longman\TelegramBot\Request::sendChatAction(['chat_id' => $chat_id, 'action' => 'typing']);
+						if ($userId == 141455495 && $message == '/stop') { echo 'Buy buy'; die();}
 
-			if (isset($forReply[$chat_id][$userId])) {
-				$forReply[$chat_id][$userId]['message'].=' '.$message;
-			}
-			else {
-				$forReply[$chat_id][$userId]['message'] = $message;
-				$forReply[$chat_id][$userId]['userName'] = $userName;
-			}
+						if ($item->message['chat']['type'] !== 'private' && strpos($message, $BOT_NAME) === false) continue;
 
-		}
+						$message = str_replace('@'.$BOT_NAME, '', $message);
+						$message = trim($message);
 
-		foreach ($forReply as $chat_id => $chat)
-			foreach($chat as $item) {
+						Longman\TelegramBot\Request::sendChatAction(['chat_id' => $chat_id, 'action' => 'typing']);
 
-				$message = $item['message'];
-				$useName = $item['userName'];
+						if (isset($forReply[$chat_id][$userId])) {
+							$forReply[$chat_id][$userId]['message'].=' '.$message;
+						}
+						else {
+							$forReply[$chat_id][$userId]['message'] = $message;
+							$forReply[$chat_id][$userId]['userName'] = $userName;
+						}
 
-				$myCurl = curl_init();
-				curl_setopt_array($myCurl, array(
-					CURLOPT_URL => $MARISHKO_API_URL.'0.1/getAnswer/',
-					CURLOPT_RETURNTRANSFER => true,
-					CURLOPT_POST => true,
-					CURLOPT_POSTFIELDS => http_build_query(array('userName'=>$userName, 'phrase'=>$message))
-				));
-				$response = curl_exec($myCurl);
-				curl_close($myCurl);
+						$forReply[$chat_id][$userId]['lastDt'] = $item->message['date'];
 
-				$response = json_decode($response, true);
+					}
 
-				if ($response == false || !isset($response['answer'])) continue;
+					foreach ($forReply as $chat_id => $chat)
+						foreach($chat as $item) {
 
-				echo PHP_EOL.$userName.':'.$message.PHP_EOL;
-				echo 'bot:'.$response['answer'].PHP_EOL;
+							$message = $item['message'];
+							$userName = $item['userName'];
 
-				$result = Longman\TelegramBot\Request::sendMessage(['chat_id' => $chat_id, 'text' => $response['answer']]);
-			}
+							$myCurl = curl_init();
+							curl_setopt_array($myCurl, array(
+								CURLOPT_URL => $MARISHKO_API_URL.'0.1/getAnswer/',
+								CURLOPT_RETURNTRANSFER => true,
+								CURLOPT_POST => true,
+								CURLOPT_POSTFIELDS => http_build_query(array('userName'=>$userName, 'phrase'=>$message))
+							));
+							$response = curl_exec($myCurl);
+							curl_close($myCurl);
+
+							var_dump($response);
+
+							$response = json_decode($response, true);
+
+							if ($response == false || !isset($response['msg'])) {
+								$waitSomething[$chat_id]['time'] = time();
+								$waitSomething[$chat_id]['userName'] = time();
+								continue;
+							} else {
+								unset($waitSomething[$chat_id]);
+							}
+
+							echo PHP_EOL.$userName.':'.$message.PHP_EOL;
+							echo 'bot:'.$response['msg'].PHP_EOL;
+
+							$result = Longman\TelegramBot\Request::sendMessage(['chat_id' => $chat_id, 'text' => $response['msg']]);
+						}
+
+					// Say something
+					foreach($waitSomething as $chat_id => $item) {
+
+var_dump(time() - $item['time']);
+
+						if (time() - $item['time'] > 10) {
+
+							unset($waitSomething[$chat_id]);
+
+							Longman\TelegramBot\Request::sendChatAction(['chat_id' => $chat_id, 'action' => 'typing']);
+
+							$myCurl = curl_init();
+							curl_setopt_array($myCurl, array(
+								CURLOPT_URL => $MARISHKO_API_URL.'0.1/getSomething/',
+								CURLOPT_RETURNTRANSFER => true,
+								CURLOPT_POST => true,
+								CURLOPT_POSTFIELDS => http_build_query(array('userName'=>$item['userName']))
+							));
+							$response = curl_exec($myCurl);
+							curl_close($myCurl);
+
+							$response = json_decode($response, true);
+
+							if ($response == false || !isset($response['msg'])) continue;
+
+							$result = Longman\TelegramBot\Request::sendMessage(['chat_id' => $chat_id, 'text' => $response['msg']]);
+						}
+					}
 
 
 
-	} else {
-		echo date('Y-m-d H:i:s', time()) . ' - Failed to fetch updates' . PHP_EOL;
-		echo $serverResponse->printError();
+				} else {
+					echo date('Y-m-d H:i:s', time()) . ' - Failed to fetch updates' . PHP_EOL;
+					echo $serverResponse->printError();
+				}
 	}
 } catch (Longman\TelegramBot\Exception\TelegramException $e) {
 	echo $e;
