@@ -66,7 +66,7 @@ try {
 					$forReply=[];
 					foreach ($result as $item) {
 
-						var_dump($item);echo PHP_EOL.PHP_EOL;
+					//	var_dump($item);echo PHP_EOL.PHP_EOL;
 
 						if (!isset($item->message['text']) || !isset($item->message['from'])) continue;
 
@@ -114,7 +114,7 @@ try {
 							$response = curl_exec($myCurl);
 							curl_close($myCurl);
 
-							var_dump($response);
+						//	var_dump($response);
 
 							$response = json_decode($response, true);
 
@@ -135,7 +135,7 @@ try {
 					// Say something
 					foreach($waitSomething as $chat_id => $item) {
 
-var_dump(time() - $item['time']);
+//var_dump(time() - $item['time']);
 
 						if (time() - $item['time'] > 10) {
 
