@@ -11,22 +11,7 @@
 
 // Load composer
 require __DIR__ . '/vendor/autoload.php';
-
-// Add you bot's API key and name
-$API_KEY = '308804586:AAF4wou8LjZp_DOCEzd7KRr3Dt7P6qr7w4c';
-$BOT_NAME = 'MarishkoBot';
-
-$MARISHKO_API_URL = 'http://localhost:4567/';
-// Define a path for your custom commands
-//$commands_path = __DIR__ . '/Commands/';
-
-// Enter your MySQL database credentials
-$mysql_credentials = [
-	'host'     => 'localhost',
-	'user'     => 'skyscream',
-	'password' => 'bountykiller',
-	'database' => 'ai_telegram',
-];
+require __DIR__ . '/config.php';
 
 try {
 	// Create Telegram API object

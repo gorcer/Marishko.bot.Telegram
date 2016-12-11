@@ -1,0 +1,24 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: gorcer
+ * Date: 11.12.16
+ * Time: 11:33
+ */
+
+
+// Add you bot's API key and name
+$API_KEY = '';
+$BOT_NAME = 'MarishkoBot';
+
+$MARISHKO_API_URL = 'http://localhost:4567/';
+// Define a path for your custom commands
+//$commands_path = __DIR__ . '/Commands/';
+
+// Enter your MySQL database credentials
+$mysql_credentials = [
+	'host'     => 'www',
+	'user'     => 'skyscream',
+	'password' => '',
+	'database' => 'ai_telegram',
+];
