@@ -66,7 +66,7 @@ try {
 					$forReply=[];
 					foreach ($result as $item) {
 
-					//	var_dump($item);echo PHP_EOL.PHP_EOL;
+						var_dump($item);echo PHP_EOL.PHP_EOL;
 
 						if (!isset($item->message['text']) || !isset($item->message['from'])) continue;
 
@@ -105,12 +105,27 @@ try {
 							$userName = $item['userName'];
 
 							$myCurl = curl_init();
-							curl_setopt_array($myCurl, array(
-								CURLOPT_URL => $MARISHKO_API_URL.'0.1/getAnswer/',
-								CURLOPT_RETURNTRANSFER => true,
-								CURLOPT_POST => true,
-								CURLOPT_POSTFIELDS => http_build_query(array('userName'=>$userName, 'phrase'=>$message))
-							));
+
+
+							if ($message == '/start') {
+								echo "Hello!".PHP_EOL;
+								curl_setopt_array($myCurl, array(
+									CURLOPT_URL => $MARISHKO_API_URL.'0.1/getHello/',
+									CURLOPT_RETURNTRANSFER => true,
+									CURLOPT_POST => true,
+									CURLOPT_POSTFIELDS => http_build_query(array('userName'=>$userName))
+								));
+							} else {
+
+								curl_setopt_array($myCurl, array(
+									CURLOPT_URL => $MARISHKO_API_URL.'0.1/getAnswer/',
+									CURLOPT_RETURNTRANSFER => true,
+									CURLOPT_POST => true,
+									CURLOPT_POSTFIELDS => http_build_query(array('userName'=>$userName, 'phrase'=>$message))
+								));
+							}
+
+
 							$response = curl_exec($myCurl);
 							curl_close($myCurl);
 
