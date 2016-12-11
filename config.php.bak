@@ -17,7 +17,7 @@ $MARISHKO_API_URL = 'http://localhost:4567/';
 
 // Enter your MySQL database credentials
 $mysql_credentials = [
-	'host'     => 'www',
+	'host'     => 'localhost',
 	'user'     => 'skyscream',
 	'password' => '',
 	'database' => 'ai_telegram',

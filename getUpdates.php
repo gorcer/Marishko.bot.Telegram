@@ -61,9 +61,9 @@ try {
 		$forReply=[];
 		foreach ($result as $item) {
 
-			//var_dump($item);echo PHP_EOL.PHP_EOL;
+		//	var_dump($item);echo PHP_EOL.PHP_EOL;
 
-			if (!isset($item->message['text']) || !isset($item->message['from'])) return;
+			if (!isset($item->message['text']) || !isset($item->message['from'])) continue;
 
 			$userName =(isset($item->message['from']['first_name']) ? $item->message['from']['first_name'].'_':'').
 						(isset($item->message['from']['last_name']) ? $item->message['from']['last_name'].'_':'').
@@ -72,8 +72,11 @@ try {
 			$message = $item->message['text'];
 			$chat_id = $item->message['chat']['id'];
 
+			if ($item->message['chat']['type'] !== 'private' && strpos($message, $BOT_NAME) === false) continue;
+
 			$message = str_replace('@'.$BOT_NAME, '', $message);
 			$message = trim($message);
+
 			Longman\TelegramBot\Request::sendChatAction(['chat_id' => $chat_id, 'action' => 'typing']);
 
 			if (isset($forReply[$chat_id][$userId])) {
@@ -103,8 +106,8 @@ try {
 				curl_close($myCurl);
 
 				$response = json_decode($response, true);
-				var_dump($response);
-				if ($response == false || !isset($response['answer'])) return;
+
+				if ($response == false || !isset($response['answer'])) continue;
 
 				echo PHP_EOL.$userName.':'.$message.PHP_EOL;
 				echo 'bot:'.$response['answer'].PHP_EOL;
