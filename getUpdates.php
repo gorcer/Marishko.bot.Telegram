@@ -108,7 +108,7 @@ try {
 
 
 							if ($message == '/start') {
-								echo "Hello!".PHP_EOL;
+								//echo "Hello!".PHP_EOL;
 								curl_setopt_array($myCurl, array(
 									CURLOPT_URL => $MARISHKO_API_URL.'0.1/getHello/',
 									CURLOPT_RETURNTRANSFER => true,
