@@ -51,19 +51,29 @@ try {
 	//$telegram->enableBotan('your_token');
 
 	$waitSomething=[];
-
+		$sleepTime = 5;
 		while (true) {
 
-				sleep(5);
+				sleep($sleepTime);
 				// Handle telegram getUpdates request
 				$serverResponse = $telegram->handleGetUpdates();
 
 				if ($serverResponse->isOk()) {
+
 					$result = $serverResponse->getResult();
 					$updateCount = count($serverResponse->getResult());
 					//echo date('Y-m-d H:i:s', time()) . ' - Processed ' . $updateCount . ' updates';
 
 					$forReply=[];
+
+					if (sizeof($result) > 0) {
+						$sleepTime=4;
+					} else {
+						if ($sleepTime < 20) {
+							$sleepTime++;
+						}
+					}
+
 					foreach ($result as $item) {
 
 						var_dump($item);echo PHP_EOL.PHP_EOL;
